@@ -2,6 +2,7 @@ name: SimplyElo
 description: $description
 prefix: SimplyElo
 version: '${version}'
+softdepend: [PlaceholderAPI]
 
 main: io.github.abradee.simplyElo.SimplyElo
 paper-plugin-loader: io.github.abradee.simplyElo.SimplyEloLoader
