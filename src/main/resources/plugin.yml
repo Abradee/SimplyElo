@@ -1,0 +1,12 @@
+name: SimplyElo
+description: $description
+prefix: SimplyElo
+version: '${version}'
+
+main: io.github.abradee.simplyElo.SimplyElo
+paper-plugin-loader: io.github.abradee.simplyElo.SimplyEloLoader
+api-version: '26.2'
+load: POSTWORLD
+
+authors: [ abradee ]
+website: https://modrinth.com/plugin/SimplyElo
