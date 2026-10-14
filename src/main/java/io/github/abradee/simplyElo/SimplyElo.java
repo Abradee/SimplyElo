@@ -1,12 +1,16 @@
 package io.github.abradee.simplyElo;
 
 import de.clickism.modrinthupdatechecker.ModrinthUpdateChecker;
+import io.github.abradee.simplyElo.Commands.ResetEloCommand;
+import io.github.abradee.simplyElo.Commands.ViewEloCommand;
 import io.github.abradee.simplyElo.Managers.EloManager;
 import io.github.abradee.simplyElo.Listeners.ConnectionListener;
 import io.github.abradee.simplyElo.Listeners.KillListener;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.Objects;
 
 public final class SimplyElo extends JavaPlugin {
 
@@ -22,6 +26,14 @@ public final class SimplyElo extends JavaPlugin {
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(new KillListener(eloManager), this);
         pm.registerEvents(new ConnectionListener(eloManager), this);
+
+        ViewEloCommand viewEloCommand = new ViewEloCommand(eloManager);
+        Objects.requireNonNull(getCommand("viewelo")).setExecutor(viewEloCommand);
+        Objects.requireNonNull(getCommand("viewelo")).setTabCompleter(viewEloCommand);
+
+        ResetEloCommand resetEloCommand = new ResetEloCommand(this, eloManager);
+        Objects.requireNonNull(getCommand("resetelo")).setExecutor(resetEloCommand);
+        Objects.requireNonNull(getCommand("resetelo")).setTabCompleter(resetEloCommand);
 
         if (pm.isPluginEnabled("PlaceholderAPI")) {
             this.placeholderApiPresent = true;

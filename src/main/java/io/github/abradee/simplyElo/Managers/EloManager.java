@@ -1,6 +1,8 @@
 package io.github.abradee.simplyElo.Managers;
 
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.sql.Connection;
@@ -16,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class EloManager {
 
-    private static final int DEFAULT_ELO = 1000;
+    private static final int DEFAULT_ELO = 100;
     private static final int K_FACTOR = 32;
 
     private final JavaPlugin plugin;
@@ -145,5 +147,9 @@ public class EloManager {
         } catch (SQLException e) {
             plugin.getLogger().severe("Failed to batch save Elo data: " + e.getMessage());
         }
+    }
+
+    public JavaPlugin getPlugin() {
+        return this.plugin;
     }
 }

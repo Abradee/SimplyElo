@@ -9,5 +9,25 @@ paper-plugin-loader: io.github.abradee.simplyElo.SimplyEloLoader
 api-version: '26.2'
 load: POSTWORLD
 
+commands:
+  viewelo:
+    description: View your Elo or another player's Elo rating.
+    usage: /<command> [player]
+    aliases: [checkelo]
+    permission: simplyelo.command.viewelo
+  resetelo:
+    description: Reset a player's Elo rating to default.
+    usage: /<command> <player>
+    permission: simplyelo.admin.reset
+
+permissions:
+  simplyelo.command.viewelo:
+    description: Allows viewing Elo ratings.
+    default: true
+  simplyelo.admin.reset:
+    description: Allows resetting a player's Elo rating.
+    default: op
+
+
 authors: [ abradee ]
 website: https://modrinth.com/plugin/SimplyElo
