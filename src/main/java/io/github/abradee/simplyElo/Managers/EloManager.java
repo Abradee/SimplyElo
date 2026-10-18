@@ -1,8 +1,8 @@
 package io.github.abradee.simplyElo.Managers;
 
-import org.bukkit.plugin.Plugin;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.sql.Connection;
@@ -11,19 +11,81 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class EloManager {
 
-    private static final int DEFAULT_ELO = 100;
+    private static final int DEFAULT_ELO = 1000;
     private static final int K_FACTOR = 32;
 
     private final JavaPlugin plugin;
     private final String connectionUrl;
     private final Map<UUID, Integer> eloCache = new ConcurrentHashMap<>();
+
+    public record LeaderboardEntry(UUID uuid, String name, int elo) {}
+    private final List<LeaderboardEntry> topLeaderboardCache = new CopyOnWriteArrayList<>();
+
+    public enum RankTier {
+        UNRANKED("Unranked", "&7", "✧", 0),
+        BRONZE("Bronze", "&c", "✦", 800),
+        SILVER("Silver", "&f", "✦", 1000),
+        GOLD("Gold", "&e", "★", 1200),
+        PLATINUM("Platinum", "&b", "★", 1400),
+        DIAMOND("Diamond", "&9", "✪", 1600),
+        MASTER("Master", "&d", "❂", 1800);
+
+        private final String displayName;
+        private final String color;
+        private final String icon;
+        private final int minElo;
+
+        RankTier(String displayName, String color, String icon, int minElo) {
+            this.displayName = displayName;
+            this.color = color;
+            this.icon = icon;
+            this.minElo = minElo;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public String getColor() {
+            return color;
+        }
+
+        public String getIcon() {
+            return icon;
+        }
+
+        public int getMinElo() {
+            return minElo;
+        }
+
+        public String getFormattedName() {
+            return color + displayName;
+        }
+
+        public String getFormattedIcon() {
+            return color + icon;
+        }
+
+        public static RankTier fromElo(int elo) {
+            RankTier current = UNRANKED;
+            for (RankTier tier : values()) {
+                if (elo >= tier.minElo) {
+                    current = tier;
+                }
+            }
+            return current;
+        }
+    }
 
     public EloManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -36,6 +98,9 @@ public class EloManager {
         this.connectionUrl = "jdbc:sqlite:" + dbFile.getAbsolutePath();
 
         initDatabase();
+
+        // Refresh top 50 cache asynchronously every 60 seconds (1200 ticks)
+        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::refreshTopCache, 20L, 1200L);
     }
 
     private Connection getConnection() throws SQLException {
@@ -43,22 +108,78 @@ public class EloManager {
     }
 
     private void initDatabase() {
-        String sql = """
+        String createTableSql = """
             CREATE TABLE IF NOT EXISTS player_elo (
                 uuid TEXT PRIMARY KEY,
                 elo INTEGER NOT NULL
             );
         """;
+        String createIndexSql = "CREATE INDEX IF NOT EXISTS idx_player_elo_score ON player_elo(elo DESC);";
 
         try (Connection conn = getConnection(); Statement stmt = conn.createStatement()) {
-            stmt.execute(sql);
+            stmt.execute(createTableSql);
+            stmt.execute(createIndexSql);
         } catch (SQLException e) {
             plugin.getLogger().severe("Failed to initialize SQLite database: " + e.getMessage());
         }
     }
 
+    public void refreshTopCache() {
+        String sql = "SELECT uuid, elo FROM player_elo ORDER BY elo DESC LIMIT 50;";
+        List<LeaderboardEntry> updatedList = new ArrayList<>();
+
+        try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                UUID uuid = UUID.fromString(rs.getString("uuid"));
+                int elo = rs.getInt("elo");
+
+                OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
+                String name = op.getName() != null ? op.getName() : "Unknown";
+
+                updatedList.add(new LeaderboardEntry(uuid, name, elo));
+            }
+
+            topLeaderboardCache.clear();
+            topLeaderboardCache.addAll(updatedList);
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Failed to update top leaderboard cache: " + e.getMessage());
+        }
+    }
+
+    public LeaderboardEntry getPlayerAtRank(int placement) {
+        int index = placement - 1;
+        if (index >= 0 && index < topLeaderboardCache.size()) {
+            return topLeaderboardCache.get(index);
+        }
+        return null;
+    }
+
     public int getElo(UUID uuid) {
         return eloCache.getOrDefault(uuid, DEFAULT_ELO);
+    }
+
+    public RankTier getRankTier(UUID uuid) {
+        return RankTier.fromElo(getElo(uuid));
+    }
+
+    public CompletableFuture<Integer> getLeaderboardPosition(UUID uuid) {
+        return CompletableFuture.supplyAsync(() -> {
+            int currentElo = getElo(uuid);
+            String sql = "SELECT COUNT(*) + 1 AS position FROM player_elo WHERE elo > ?;";
+
+            try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, currentElo);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    return rs.getInt("position");
+                }
+            } catch (SQLException e) {
+                plugin.getLogger().warning("Could not calculate leaderboard position for " + uuid + ": " + e.getMessage());
+            }
+
+            return -1;
+        });
     }
 
     public void setElo(UUID uuid, int elo) {
@@ -98,7 +219,6 @@ public class EloManager {
                 plugin.getLogger().warning("Could not load Elo for " + uuid + ": " + e.getMessage());
             }
 
-            // Defaults to 1000 if not found in DB
             eloCache.put(uuid, DEFAULT_ELO);
             return DEFAULT_ELO;
         });
@@ -126,7 +246,7 @@ public class EloManager {
             plugin.getLogger().warning("Failed to save Elo for " + uuid + ": " + e.getMessage());
         }
     }
-    
+
     public void saveAllSync() {
         String sql = """
             INSERT INTO player_elo (uuid, elo) VALUES (?, ?)

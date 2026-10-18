@@ -1,7 +1,7 @@
 name: SimplyElo
 description: $description
 prefix: SimplyElo
-version: '1.2.1'
+version: '1.3.0-BUILD'
 softdepend: [PlaceholderAPI]
 
 main: io.github.abradee.simplyElo.SimplyElo
