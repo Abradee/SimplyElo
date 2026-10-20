@@ -19,24 +19,24 @@ ranks:
     display-name: "Silver"
     color: "&f"
     icon: "✦"
-    min-elo: 1000
+    min-elo: 1200
   GOLD:
     display-name: "Gold"
     color: "&e"
     icon: "★"
-    min-elo: 1200
+    min-elo: 1400
   PLATINUM:
     display-name: "Platinum"
     color: "&b"
     icon: "★"
-    min-elo: 1400
+    min-elo: 1600
   DIAMOND:
     display-name: "Diamond"
     color: "&9"
     icon: "✪"
-    min-elo: 1600
+    min-elo: 1800
   MASTER:
     display-name: "Master"
     color: "&d"
     icon: "❂"
-    min-elo: 1800
+    min-elo: 2000
