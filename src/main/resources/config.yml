@@ -1,0 +1,42 @@
+settings:
+  # basic starting elo
+  default-elo: 1000
+  # determines how much Elo changes (higher = more volatile)
+  k-factor: 32
+
+ranks:
+  UNRANKED:
+    display-name: "Unranked"
+    color: "&7"
+    icon: "✧"
+    min-elo: 0
+  BRONZE:
+    display-name: "Bronze"
+    color: "&c"
+    icon: "✦"
+    min-elo: 800
+  SILVER:
+    display-name: "Silver"
+    color: "&f"
+    icon: "✦"
+    min-elo: 1200
+  GOLD:
+    display-name: "Gold"
+    color: "&e"
+    icon: "★"
+    min-elo: 1400
+  PLATINUM:
+    display-name: "Platinum"
+    color: "&b"
+    icon: "★"
+    min-elo: 1600
+  DIAMOND:
+    display-name: "Diamond"
+    color: "&9"
+    icon: "✪"
+    min-elo: 1800
+  MASTER:
+    display-name: "Master"
+    color: "&d"
+    icon: "❂"
+    min-elo: 2000

@@ -23,7 +23,7 @@ commands:
     permission: simplyelo.command.viewelo
   resetelo:
     description: Reset a player's Elo rating to default.
-    usage: /<command> <player>
+    usage: /<command> [player]
     permission: simplyelo.admin.reset
 
 permissions:
