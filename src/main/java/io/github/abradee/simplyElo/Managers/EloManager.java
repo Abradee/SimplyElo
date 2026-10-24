@@ -33,12 +33,12 @@ public class EloManager {
 
     public enum RankTier {
         UNRANKED("Unranked", "&7", "✧", 0),
-        BRONZE("Bronze", "&c", "✦", 800),
-        SILVER("Silver", "&f", "✦", 1000),
-        GOLD("Gold", "&e", "★", 1200),
-        PLATINUM("Platinum", "&b", "★", 1400),
-        DIAMOND("Diamond", "&9", "✪", 1600),
-        MASTER("Master", "&d", "❂", 1800);
+        BRONZE("Bronze", "&c", "✦", 1000),
+        SILVER("Silver", "&f", "✦", 1200),
+        GOLD("Gold", "&e", "★", 1400),
+        PLATINUM("Platinum", "&b", "★", 1600),
+        DIAMOND("Diamond", "&9", "✪", 1800),
+        MASTER("Master", "&d", "❂", 2000);
 
         private final String displayName;
         private final String color;

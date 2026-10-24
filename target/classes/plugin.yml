@@ -1,7 +1,7 @@
 name: SimplyElo
 description: $description
 prefix: SimplyElo
-version: '1.3.0-BUILD'
+version: '1.3.0-BUILD-4'
 softdepend: [PlaceholderAPI]
 
 main: io.github.abradee.simplyElo.SimplyElo
@@ -10,6 +10,12 @@ api-version: '26.2'
 load: POSTWORLD
 
 commands:
+  commands:
+    setrank:
+      description: Sets a player's Elo to the baseline of a specific rank.
+      aliases: [changerank]
+      permission: simplyelo.admin.setrank
+      usage: /setrank <player> <rank>
   viewelo:
     description: View your Elo or another player's Elo rating.
     usage: /<command> [player]

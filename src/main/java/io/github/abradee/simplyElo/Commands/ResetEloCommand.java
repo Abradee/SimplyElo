@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 public class ResetEloCommand implements CommandExecutor, TabCompleter {
 
-    private static final int DEFAULT_ELO = 100;
+    private static final int DEFAULT_ELO = 1000;
     private final JavaPlugin plugin;
     private final EloManager eloManager;
 

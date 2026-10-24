@@ -2,6 +2,7 @@ package io.github.abradee.simplyElo;
 
 import de.clickism.modrinthupdatechecker.ModrinthUpdateChecker;
 import io.github.abradee.simplyElo.Commands.ResetEloCommand;
+import io.github.abradee.simplyElo.Commands.SetRankCommand;
 import io.github.abradee.simplyElo.Commands.ViewEloCommand;
 import io.github.abradee.simplyElo.Managers.EloManager;
 import io.github.abradee.simplyElo.Listeners.ConnectionListener;
@@ -34,6 +35,10 @@ public final class SimplyElo extends JavaPlugin {
         ResetEloCommand resetEloCommand = new ResetEloCommand(this, eloManager);
         Objects.requireNonNull(getCommand("resetelo")).setExecutor(resetEloCommand);
         Objects.requireNonNull(getCommand("resetelo")).setTabCompleter(resetEloCommand);
+
+        SetRankCommand setRankCmd = new SetRankCommand(eloManager);
+        getCommand("setrank").setExecutor(setRankCmd);
+        getCommand("setrank").setTabCompleter(setRankCmd);
 
         if (pm.isPluginEnabled("PlaceholderAPI")) {
             this.placeholderApiPresent = true;
