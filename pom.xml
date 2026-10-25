@@ -6,7 +6,7 @@
 
     <groupId>io.github.abradee</groupId>
     <artifactId>SimplyElo</artifactId>
-    <version>1.3.0-BUILD-7</version>
+    <version>1.3.0-BUILD-8</version>
     <packaging>jar</packaging>
 
     <name>SimplyElo</name>

@@ -24,9 +24,9 @@ commands:
     description: Reset a player's Elo rating to default.
     usage: /<command> [player]
     permission: simplyelo.admin.reset
-  eloreload:
-    description: Reloads the SimplyElo config and ranks.
-    usage: /eloreload
+  reloadelo:
+    description: Reloads the SimplyElo configuration and ranks.
+    usage: /reloadelo
     permission: simplyelo.admin.reload
 
 
