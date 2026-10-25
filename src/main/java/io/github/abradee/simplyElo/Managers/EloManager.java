@@ -2,6 +2,8 @@ package io.github.abradee.simplyElo.Managers;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -21,8 +23,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class EloManager {
 
-    private static final int DEFAULT_ELO = 1000;
-    private static final int K_FACTOR = 32;
+    private int defaultElo = 1000;
+    private int kFactor = 32;
 
     private final JavaPlugin plugin;
     private final String connectionUrl;
@@ -31,60 +33,30 @@ public class EloManager {
     public record LeaderboardEntry(UUID uuid, String name, int elo) {}
     private final List<LeaderboardEntry> topLeaderboardCache = new CopyOnWriteArrayList<>();
 
-    public enum RankTier {
-        UNRANKED("Unranked", "&7", "✧", 0),
-        BRONZE("Bronze", "&c", "✦", 1000),
-        SILVER("Silver", "&f", "✦", 1200),
-        GOLD("Gold", "&e", "★", 1400),
-        PLATINUM("Platinum", "&b", "★", 1600),
-        DIAMOND("Diamond", "&9", "✪", 1800),
-        MASTER("Master", "&d", "❂", 2000);
+    private final List<RankTier> rankTiers = new ArrayList<>();
 
+    public static class RankTier {
+        private final String id;
         private final String displayName;
         private final String color;
         private final String icon;
         private final int minElo;
 
-        RankTier(String displayName, String color, String icon, int minElo) {
+        public RankTier(String id, String displayName, String color, String icon, int minElo) {
+            this.id = id;
             this.displayName = displayName;
             this.color = color;
             this.icon = icon;
             this.minElo = minElo;
         }
 
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public String getColor() {
-            return color;
-        }
-
-        public String getIcon() {
-            return icon;
-        }
-
-        public int getMinElo() {
-            return minElo;
-        }
-
-        public String getFormattedName() {
-            return color + displayName;
-        }
-
-        public String getFormattedIcon() {
-            return color + icon;
-        }
-
-        public static RankTier fromElo(int elo) {
-            RankTier current = UNRANKED;
-            for (RankTier tier : values()) {
-                if (elo >= tier.minElo) {
-                    current = tier;
-                }
-            }
-            return current;
-        }
+        public String getId() { return id; }
+        public String getDisplayName() { return displayName; }
+        public String getColor() { return color; }
+        public String getIcon() { return icon; }
+        public int getMinElo() { return minElo; }
+        public String getFormattedName() { return color + displayName; }
+        public String getFormattedIcon() { return color + icon; }
     }
 
     public EloManager(JavaPlugin plugin) {
@@ -94,13 +66,53 @@ public class EloManager {
             plugin.getDataFolder().mkdirs();
         }
 
+        loadConfig();
+
         File dbFile = new File(plugin.getDataFolder(), "elo_data.db");
         this.connectionUrl = "jdbc:sqlite:" + dbFile.getAbsolutePath();
 
         initDatabase();
 
-        // Refresh top 50 cache asynchronously every 60 seconds (1200 ticks)
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::refreshTopCache, 20L, 1200L);
+    }
+
+    public List<RankTier> getRankTiers() {
+        return this.rankTiers;
+    }
+
+    public RankTier getRankTierById(String id) {
+        for (RankTier tier : rankTiers) {
+            if (tier.getId().equalsIgnoreCase(id)) {
+                return tier;
+            }
+        }
+        return null;
+    }
+
+    public void loadConfig() {
+        plugin.saveDefaultConfig();
+        plugin.reloadConfig();
+        FileConfiguration config = plugin.getConfig();
+
+        this.defaultElo = config.getInt("settings.default-elo", 1000);
+        this.kFactor = config.getInt("settings.k-factor", 32);
+
+        rankTiers.clear();
+        ConfigurationSection ranksSection = config.getConfigurationSection("ranks");
+        if (ranksSection != null) {
+            for (String key : ranksSection.getKeys(false)) {
+                String displayName = ranksSection.getString(key + ".display-name", key);
+                String color = ranksSection.getString(key + ".color", "&7");
+                String icon = ranksSection.getString(key + ".icon", "");
+                int minElo = ranksSection.getInt(key + ".min-elo", 0);
+
+                rankTiers.add(new RankTier(key, displayName, color, icon, minElo));
+            }
+        } else {
+            rankTiers.add(new RankTier("UNRANKED", "Unranked", "&7", "✧", 0));
+        }
+
+        rankTiers.sort((a, b) -> Integer.compare(b.getMinElo(), a.getMinElo()));
     }
 
     private Connection getConnection() throws SQLException {
@@ -156,11 +168,17 @@ public class EloManager {
     }
 
     public int getElo(UUID uuid) {
-        return eloCache.getOrDefault(uuid, DEFAULT_ELO);
+        return eloCache.getOrDefault(uuid, defaultElo);
     }
 
     public RankTier getRankTier(UUID uuid) {
-        return RankTier.fromElo(getElo(uuid));
+        int elo = getElo(uuid);
+        for (RankTier tier : rankTiers) {
+            if (elo >= tier.getMinElo()) {
+                return tier;
+            }
+        }
+        return rankTiers.get(rankTiers.size() - 1);
     }
 
     public CompletableFuture<Integer> getLeaderboardPosition(UUID uuid) {
@@ -195,8 +213,8 @@ public class EloManager {
         double expectedWinner = 1.0 / (1.0 + Math.pow(10.0, (loserElo - winnerElo) / 400.0));
         double expectedLoser = 1.0 / (1.0 + Math.pow(10.0, (winnerElo - loserElo) / 400.0));
 
-        int newWinnerElo = Math.max(0, (int) Math.round(winnerElo + K_FACTOR * (1.0 - expectedWinner)));
-        int newLoserElo = Math.max(0, (int) Math.round(loserElo + K_FACTOR * (0.0 - expectedLoser)));
+        int newWinnerElo = Math.max(0, (int) Math.round(winnerElo + kFactor * (1.0 - expectedWinner)));
+        int newLoserElo = Math.max(0, (int) Math.round(loserElo + kFactor * (0.0 - expectedLoser)));
 
         setElo(winnerUuid, newWinnerElo);
         setElo(loserUuid, newLoserElo);
@@ -219,8 +237,8 @@ public class EloManager {
                 plugin.getLogger().warning("Could not load Elo for " + uuid + ": " + e.getMessage());
             }
 
-            eloCache.put(uuid, DEFAULT_ELO);
-            return DEFAULT_ELO;
+            eloCache.put(uuid, defaultElo);
+            return defaultElo;
         });
     }
 

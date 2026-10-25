@@ -6,11 +6,10 @@
 
     <groupId>io.github.abradee</groupId>
     <artifactId>SimplyElo</artifactId>
-    <version>1.3.0-BUILD-4</version>
+    <version>1.3.0-BUILD-7</version>
     <packaging>jar</packaging>
 
     <name>SimplyElo</name>
-
     <properties>
         <java.version>25</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

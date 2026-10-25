@@ -10,12 +10,11 @@ api-version: '26.2'
 load: POSTWORLD
 
 commands:
-  commands:
-    setrank:
-      description: Sets a player's Elo to the baseline of a specific rank.
-      aliases: [changerank]
-      permission: simplyelo.admin.setrank
-      usage: /setrank <player> <rank>
+  setrank:
+    description: Sets a player's Elo to the baseline of a specific rank.
+    aliases: [changerank]
+    permission: simplyelo.admin.setrank
+    usage: /setrank <player> <rank>
   viewelo:
     description: View your Elo or another player's Elo rating.
     usage: /<command> [player]
@@ -25,6 +24,12 @@ commands:
     description: Reset a player's Elo rating to default.
     usage: /<command> [player]
     permission: simplyelo.admin.reset
+  eloreload:
+    description: Reloads the SimplyElo config and ranks.
+    usage: /eloreload
+    permission: simplyelo.admin.reload
+
+
 
 permissions:
   simplyelo.command.viewelo:
@@ -33,7 +38,12 @@ permissions:
   simplyelo.admin.reset:
     description: Allows resetting a player's Elo rating.
     default: op
-
+  simplyelo.admin.reload:
+    description: Allows reloading the plugin configuration.
+    default: op
+  simplyelo.admin.setrank:
+    description: Allows setting a player's rank.
+    default: op
 
 authors: [ abradee ]
 website: https://modrinth.com/plugin/SimplyElo

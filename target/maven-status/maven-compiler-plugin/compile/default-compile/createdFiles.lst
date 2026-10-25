@@ -1,11 +1,12 @@
-io\github\abradee\simplyElo\Commands\ResetEloCommand.class
 io\github\abradee\simplyElo\Listeners\KillListener.class
+io\github\abradee\simplyElo\SimplyElo.class
+io\github\abradee\simplyElo\Commands\ReloadCommand.class
+io\github\abradee\simplyElo\Commands\SetRankCommand.class
+io\github\abradee\simplyElo\Commands\ResetEloCommand.class
 io\github\abradee\simplyElo\Commands\ViewEloCommand.class
 io\github\abradee\simplyElo\SimplyEloLoader.class
 io\github\abradee\simplyElo\SimplyEloExpansion.class
-io\github\abradee\simplyElo\SimplyElo.class
 io\github\abradee\simplyElo\Managers\EloManager$RankTier.class
-io\github\abradee\simplyElo\Commands\SetRankCommand.class
 io\github\abradee\simplyElo\Managers\EloManager$LeaderboardEntry.class
 io\github\abradee\simplyElo\Managers\EloManager.class
 io\github\abradee\simplyElo\Listeners\ConnectionListener.class

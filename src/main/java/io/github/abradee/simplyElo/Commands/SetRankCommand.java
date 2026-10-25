@@ -11,7 +11,6 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,13 +45,12 @@ public class SetRankCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        EloManager.RankTier targetTier;
-        try {
-            targetTier = EloManager.RankTier.valueOf(rankInput);
-        } catch (IllegalArgumentException e) {
+        EloManager.RankTier targetTier = eloManager.getRankTierById(rankInput);
+
+        if (targetTier == null) {
             sender.sendMessage(ChatColor.RED + "Invalid rank. Valid ranks are: " +
-                    Arrays.stream(EloManager.RankTier.values())
-                            .map(Enum::name)
+                    eloManager.getRankTiers().stream()
+                            .map(EloManager.RankTier::getId)
                             .collect(Collectors.joining(", ")));
             return true;
         }
@@ -86,9 +84,9 @@ public class SetRankCommand implements CommandExecutor, TabCompleter {
             }
         } else if (args.length == 2) {
             String partialRank = args[1].toUpperCase();
-            for (EloManager.RankTier tier : EloManager.RankTier.values()) {
-                if (tier.name().startsWith(partialRank)) {
-                    completions.add(tier.name());
+            for (EloManager.RankTier tier : eloManager.getRankTiers()) {
+                if (tier.getId().toUpperCase().startsWith(partialRank)) {
+                    completions.add(tier.getId());
                 }
             }
         }
