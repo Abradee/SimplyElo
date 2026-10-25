@@ -4,7 +4,7 @@
   <groupId>io.github.abradee</groupId>
   <artifactId>SimplyElo</artifactId>
   <name>SimplyElo</name>
-  <version>1.3.0-BUILD-7</version>
+  <version>1.3.0</version>
   <build>
     <defaultGoal>clean package</defaultGoal>
     <resources>
