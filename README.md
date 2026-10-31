@@ -1,6 +1,6 @@
 ## About
 
-This is a fairly simple, lightweight, and intuitive plugin for your Paper 26.2+ server that allows players to have elo. You can gain and lose elo by getting kills or deaths.
+This is a fairly simple, lightweight, and intuitive plugin for your Paper 26.2+ server that allows players to have elo and ranks. You can gain and lose elo by getting kills or deaths.
 
 ## How to use
 
